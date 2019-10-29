@@ -24,6 +24,15 @@ body {
   margin: 0 auto;
 }
 
+.controls {
+  position: absolute;
+  background-color: gray;
+  display: flex;
+  flex-direction: column;
+  padding: 0.25rem;
+  z-index: 1;
+}
+
 .image-placeholder {
   margin: var(--img-margin);
   width: var(--img-dim);
