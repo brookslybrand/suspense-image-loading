@@ -2,17 +2,58 @@ body {
   background-color: rgb(40, 44, 51);
 }
 
-.App {
+/* .App {
   font-family: sans-serif;
   display: grid;
-  grid-template-columns: repeat(4, auto);
+  grid-template-columns: repeat(4, 250px);
+  grid-template-rows: repeat(3, 250px);
+  
+  justify-items: center;
+  align-items: center;
+} */
+
+.App {
+  font-family: sans-serif;
+  display: flex;
+  flex-wrap: wrap;
   justify-content: center;
+  width: 1000px;
+  margin: 0 auto;
+}
+
+.image-placeholder {
+  margin: 1rem;
+  width: 200px;
+  height: 200px;
+  background-color: #00000010;
+  border-radius: 50%;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+h3 {
+  text-align: center;
 }
 
 img {
-  padding: 1rem;
+  margin: 1rem;
   width: 200px;
   height: 200px;
   object-fit: cover;
   border-radius: 50%;
+}
+
+.suspense-image {
+  animation: fadein 1000ms;
+  animation-delay: fadein 500ms;
+}
+@keyframes fadein {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
