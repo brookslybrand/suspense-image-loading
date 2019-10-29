@@ -66,7 +66,7 @@ function App() {
         <input
           id="error-rate"
           value={errorRate}
-          onChange={e => setErrorRate(e.target.value)}
+          onChange={e => setErrorRate(Math.min(Math.max(0, e.target.value), 1))}
           type="number"
           min={0}
           max={1}
@@ -137,8 +137,8 @@ const RegularImages = ({ errorRate }) =>
     />
   ))
 
-const ImagesWithSuspense = ({ errorRate }) =>
-  Array.from({ length: N_PICTURES }).map((_, id) => (
+const ImagesWithSuspense = ({ errorRate }) => {
+  return Array.from({ length: N_PICTURES }).map((_, id) => (
     <Suspense key={id} fallback={<div className="image-placeholder" />}>
       <ErrorBoundary>
         <SuspenseImage
@@ -148,6 +148,7 @@ const ImagesWithSuspense = ({ errorRate }) =>
       </ErrorBoundary>
     </Suspense>
   ))
+}
 
 const ImagesWithSuspenseList = ({ errorRate }) => {
   const { revealOrderOuter } = useContext(RevealOrderContext)
@@ -190,6 +191,10 @@ const ImagesWithMultipleSuspenseLists = ({ errorRate }) => {
   )
 }
 
+const SuspenseImage = ({ imageResource, alt }) => {
+  return <img className="suspense-image" src={imageResource.read()} alt={alt} />
+}
+
 // given an id, return the image's path
 // if cache=false, it will add `performance.now` to the image path
 const getImageSrc = (id, cache = false) => {
@@ -204,10 +209,6 @@ const idsPerRow = Array.from({ length: N_PICTURES }).reduce((acc, _, i) => {
   else acc[arrayIndex].push(i)
   return acc
 }, [])
-
-const SuspenseImage = ({ imageResource, alt }) => (
-  <img className="suspense-image" src={imageResource.read()} alt={alt} />
-)
 
 // wrap our image getter with a promise
 const fetchImageData = (id, errorRate) => {
