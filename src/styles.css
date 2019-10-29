@@ -13,18 +13,21 @@ body {
 } */
 
 .App {
+  --img-dim: 150px;
+  --img-margin: 1rem;
+  --pics-per-row: 5;
   font-family: sans-serif;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  width: 1000px;
+  width: calc(var(--pics-per-row) * (var(--img-dim) + (2 * var(--img-margin))));
   margin: 0 auto;
 }
 
 .image-placeholder {
-  margin: 1rem;
-  width: 200px;
-  height: 200px;
+  margin: var(--img-margin);
+  width: var(--img-dim);
+  height: var(--img-dim);
   background-color: #00000010;
   border-radius: 50%;
 
@@ -37,10 +40,15 @@ h3 {
   text-align: center;
 }
 
+/* this removes the CRA error overlay */
+iframe {
+  display: none;
+}
+
 img {
-  margin: 1rem;
-  width: 200px;
-  height: 200px;
+  margin: var(--img-margin);
+  width: var(--img-dim);
+  height: var(--img-dim);
   object-fit: cover;
   border-radius: 50%;
 }

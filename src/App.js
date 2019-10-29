@@ -1,6 +1,10 @@
-import React, { Suspense, Component, useState } from 'react'
+import React, { Suspense, SuspenseList, useState } from 'react'
 
-import './styles.css'
+import ErrorBoundary from './ErrorBoundary'
+
+// just some stuff we know
+const N_PICTURES = 20
+const N_PICTURES_PER_ROW = 5
 
 function App() {
   const [showImages, setShowImages] = useState(true)
@@ -10,8 +14,58 @@ function App() {
         {showImages ? 'hide' : 'show'} images
       </button>
       <div className="App">
-        {showImages &&
-          Array.from({ length: 12 }).map((_, id) => (
+        <ImagesWithMultipleSuspenseLists showImages={showImages} />
+      </div>
+    </>
+  )
+}
+
+const RegularImages = ({ showImages }) =>
+  showImages &&
+  Array.from({ length: N_PICTURES }).map((_, id) => (
+    <img
+      className=""
+      key={id}
+      src={randomReject(() => `images/${id}.jpeg`, () => '')}
+      alt={`dog ${id}`}
+    />
+  ))
+
+const ImagesWithSuspense = ({ showImages }) =>
+  showImages &&
+  Array.from({ length: N_PICTURES }).map((_, id) => (
+    <Suspense key={id} fallback={<div className="image-placeholder" />}>
+      <ErrorBoundary>
+        <SuspenseImage
+          imageResource={fetchImageData(`images/${id}.jpeg`)}
+          alt={`dog ${id}`}
+        />
+      </ErrorBoundary>
+    </Suspense>
+  ))
+
+const ImagesWithSuspenseList = ({ showImages }) => (
+  <SuspenseList revealOrder="forwards">
+    {showImages &&
+      Array.from({ length: N_PICTURES }).map((_, id) => (
+        <Suspense key={id} fallback={<div className="image-placeholder" />}>
+          <ErrorBoundary>
+            <SuspenseImage
+              imageResource={fetchImageData(`images/${id}.jpeg`)}
+              alt={`dog ${id}`}
+            />
+          </ErrorBoundary>
+        </Suspense>
+      ))}
+  </SuspenseList>
+)
+
+const ImagesWithMultipleSuspenseLists = ({ showImages }) => (
+  <SuspenseList revealOrder="forwards">
+    {showImages &&
+      idsPerRow.map((row, idx) => (
+        <SuspenseList key={idx} revealOrder="together">
+          {row.map(id => (
             <Suspense key={id} fallback={<div className="image-placeholder" />}>
               <ErrorBoundary>
                 <SuspenseImage
@@ -20,52 +74,28 @@ function App() {
                 />
               </ErrorBoundary>
             </Suspense>
-            // <img
-            //   className=""
-            //   key={id}
-            //   src={`images/${id}.jpeg`}
-            //   alt={`dog ${id}`}
-            // />
           ))}
-      </div>
-    </>
-  )
-}
+        </SuspenseList>
+      ))}
+  </SuspenseList>
+)
+
+// an array of arrays used to group the images together
+const idsPerRow = Array.from({ length: N_PICTURES }).reduce((acc, _, i) => {
+  const arrayIndex = Math.floor(i / N_PICTURES_PER_ROW)
+  if (acc[arrayIndex] === undefined) acc[arrayIndex] = [i]
+  else acc[arrayIndex].push(i)
+  return acc
+}, [])
 
 const SuspenseImage = ({ imageResource, alt }) => (
   <img className="suspense-image" src={imageResource.read()} alt={alt} />
 )
 
-class ErrorBoundary extends Component {
-  constructor(props) {
-    super(props)
-    this.state = { error: null, errorInfo: null }
-  }
-
-  componentDidCatch(error, errorInfo) {
-    // Catch errors in any components below and re-render with error message
-    this.setState({
-      error: error,
-      errorInfo: errorInfo
-    })
-  }
-
-  render() {
-    if (this.state.errorInfo) {
-      return (
-        <div className="image-placeholder">
-          <h3>{this.state.error && this.state.error.toString()}</h3>
-        </div>
-      )
-    }
-    return this.props.children
-  }
-}
-
 // rejects with perc% chance
 const randomReject = (resolve, reject, perc = 0.3) => {
-  if (Math.random() < perc) reject()
-  else resolve()
+  if (Math.random() < perc) return reject()
+  else return resolve()
 }
 
 function getImage(src) {
@@ -91,8 +121,11 @@ function getImage(src) {
   })
 }
 
+// wrap our image getter with a promise
 const fetchImageData = src => wrapPromise(getImage(src))
 
+// don't actually use this in production, taken from the React docs:
+// https://reactjs.org/docs/concurrent-mode-suspense.html
 function wrapPromise(promise) {
   let status = 'pending'
   let result
